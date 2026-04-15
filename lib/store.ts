@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getDefaultImage } from './defaults';
 
-export type AppMode = 'default' | 'edit';
+export type AppMode = 'default' | 'edit' | 'create';
 
 export interface GridTile {
   id: string;
@@ -28,6 +28,9 @@ interface SimulatorState {
   imagePool: PoolImage[];
   selectedPoolImageId: string | null;
   verifyState: 'idle' | 'loading' | 'success' | 'error';
+  object1: string;
+  object2: string;
+  isGenerating: boolean;
 
   setMode: (mode: AppMode) => void;
   setChallengeText: (text: string) => void;
@@ -41,6 +44,10 @@ interface SimulatorState {
   setVerifyState: (state: 'idle' | 'loading' | 'success' | 'error') => void;
   resetGrid: () => void;
   shuffleGrid: () => void;
+  setObject1: (v: string) => void;
+  setObject2: (v: string) => void;
+  setIsGenerating: (v: boolean) => void;
+  setGridFromObjects: (obj1Tiles: GridTile[], obj2Tiles: GridTile[], obj1: string, refImageUrl: string) => void;
 }
 
 function shuffled(arr: number[]): number[] {
@@ -89,6 +96,9 @@ export const useSimulatorStore = create<SimulatorState>()(
       imagePool: [],
       selectedPoolImageId: null,
       verifyState: 'idle',
+      object1: '',
+      object2: '',
+      isGenerating: false,
 
       setMode: (mode) => set({ mode, selectedTiles: [], selectedPoolImageId: null }),
 
@@ -135,15 +145,34 @@ export const useSimulatorStore = create<SimulatorState>()(
       }),
 
       shuffleGrid: () => set({ gridTiles: makeShuffledTiles() }),
+
+      setObject1: (object1) => set({ object1 }),
+      setObject2: (object2) => set({ object2 }),
+      setIsGenerating: (isGenerating) => set({ isGenerating }),
+
+      setGridFromObjects: (obj1Tiles, obj2Tiles, obj1, refImageUrl) => {
+        const combined = [...obj1Tiles, ...obj2Tiles];
+        const order = shuffled(combined.map((_, i) => i));
+        const gridTiles = order.map((src, dest) => ({ ...combined[src], id: `tile-${dest}` }));
+        set({
+          gridTiles,
+          challengeText: `Select all images with **${obj1}**`,
+          referenceImageUrl: refImageUrl,
+          selectedTiles: [],
+          verifyState: 'idle',
+        });
+      },
     }),
     {
       name: 'bot-detector-state',
-      version: 4,
+      version: 5,
       migrate: () => undefined,
       partialize: (state) => ({
         challengeText: state.challengeText,
         referenceImageUrl: state.referenceImageUrl,
         imagePool: state.imagePool,
+        object1: state.object1,
+        object2: state.object2,
       }),
     }
   )

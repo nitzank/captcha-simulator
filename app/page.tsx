@@ -8,6 +8,8 @@ import { Grid } from '@/components/widget/Grid';
 import { Footer } from '@/components/widget/Footer';
 import { Uploader } from '@/components/edit-panel/Uploader';
 import { ImagePool } from '@/components/edit-panel/ImagePool';
+import { CreatePanel } from '@/components/create-panel/CreatePanel';
+import type { AppMode } from '@/lib/store';
 import { DndContext, DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 
 export default function Home() {
@@ -65,10 +67,13 @@ export default function Home() {
               </p>
             </div>
             <Toggle
-              checked={mode === 'edit'}
-              onChange={(v) => setMode(v ? 'edit' : 'default')}
-              labelOff="PREVIEW"
-              labelOn="EDIT"
+              options={[
+                { value: 'default', label: 'PREVIEW' },
+                { value: 'edit',    label: 'EDIT' },
+                { value: 'create',  label: 'CREATE' },
+              ]}
+              value={mode}
+              onChange={(v) => setMode(v as AppMode)}
             />
           </div>
         </header>
@@ -80,7 +85,9 @@ export default function Home() {
             <p className="text-sm text-[#555] mb-6 border-l-2 border-[#F2C94C] pl-3">
               {mode === 'default'
                 ? 'Select all Batman images below and click Verify to test the challenge'
-                : 'Upload images, then drag or click to replace tiles in the grid'}
+                : mode === 'edit'
+                ? 'Upload images, then drag or click to replace tiles in the grid'
+                : 'Type two objects and generate a new image challenge with AI'}
             </p>
 
             <div className="flex gap-6 items-start">
@@ -109,8 +116,8 @@ export default function Home() {
                   <span className="text-[10px] text-[#999]">Privacy · Terms</span>
                 </div>
 
-                {/* ── DOWNLOAD (edit mode only) ── */}
-                {mode === 'edit' && (
+                {/* ── DOWNLOAD (preview mode only) ── */}
+                {mode === 'default' && (
                   <>
                     <button
                       onClick={handleDownload}
@@ -137,6 +144,9 @@ export default function Home() {
                   </>
                 )}
               </div>
+
+              {/* ── CREATE PANEL ── */}
+              {mode === 'create' && <CreatePanel />}
 
               {/* ── EDIT PANEL ── */}
               {mode === 'edit' && (
