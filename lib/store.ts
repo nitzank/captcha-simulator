@@ -4,7 +4,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { getDefaultImage } from './defaults';
 
-export type AppMode = 'default' | 'edit' | 'create';
+export type AppMode = 'default' | 'create';
 
 export interface GridTile {
   id: string;

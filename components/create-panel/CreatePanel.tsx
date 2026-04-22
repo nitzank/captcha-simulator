@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { useSimulatorStore, GridTile } from '@/lib/store';
+import { Uploader } from '@/components/edit-panel/Uploader';
+import { ImagePool } from '@/components/edit-panel/ImagePool';
 
 async function fetchImages(query: string, count: number): Promise<string[]> {
   const res = await fetch(`/api/images?query=${encodeURIComponent(query)}&count=${count}`);
@@ -10,6 +12,15 @@ async function fetchImages(query: string, count: number): Promise<string[]> {
   if (!data.urls?.length) throw new Error(`No images found for "${query}" — try a different term`);
   return data.urls;
 }
+
+const CONCEPT_PAIRS: [string, string][] = [
+  ['Life', 'Death'],
+  ['Vibe', 'Void'],
+  ['Flow', 'Stillness'],
+  ['Chaos', 'Order'],
+  ['Wild', 'Tame'],
+  ['Sacred', 'Mundane'],
+];
 
 export function CreatePanel() {
   const { object1, object2, setObject1, setObject2, setGridFromObjects } = useSimulatorStore();
@@ -57,49 +68,67 @@ export function CreatePanel() {
   return (
     <div
       className="flex-1 min-w-0 bg-white border-2 border-[#111] shadow-[4px_4px_0_#111] flex flex-col overflow-hidden"
-      style={{ height: '510px' }}
+      style={{ height: '760px' }}
     >
       {/* Header */}
       <div className="px-4 py-3 border-b-2 border-[#111] bg-[#111] flex-shrink-0">
-        <h2 className="text-xs font-bold text-[#F2C94C] uppercase tracking-wider">Create Challenge</h2>
+        <h2 className="text-xs font-bold text-[#F2C94C] uppercase tracking-wider">Design a Challenge</h2>
         <p className="text-xs text-white/60 mt-0.5">
-          Type two objects · AI fetches matching images
+          Two concepts · AI finds images · humans see it, machines don&apos;t
         </p>
       </div>
 
       {/* Form */}
       <div className="flex-1 flex flex-col gap-5 p-5 overflow-y-auto">
 
-        {/* Object 1 */}
+        {/* Concept pair presets */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-bold uppercase tracking-widest text-[#111]">
-            Object 1 — Challenge target
+            Concepts to try
+          </label>
+          <div className="flex flex-wrap gap-1.5">
+            {CONCEPT_PAIRS.map(([t, d]) => (
+              <button
+                key={`${t}-${d}`}
+                onClick={() => { setObject1(t); setObject2(d); setGenerated(false); }}
+                className="px-2.5 py-1 text-[11px] border border-[#111] bg-[#FAFAF8] hover:bg-[#F2C94C] transition-colors font-medium tracking-wide"
+              >
+                {t} · {d}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Concept 1 */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-[#111]">
+            Concept 1 — Select these
           </label>
           <input
             type="text"
             value={object1}
             onChange={(e) => { setObject1(e.target.value); setGenerated(false); }}
             onKeyDown={(e) => e.key === 'Enter' && canGenerate && handleGenerate()}
-            placeholder="e.g. Batman"
+            placeholder="e.g. Life, Chaos, Vibe"
             className="w-full px-3 py-2.5 text-sm border-2 border-[#111] bg-[#FAFAF8] placeholder:text-[#bbb] focus:outline-none focus:border-[#F2C94C] focus:bg-white transition-colors"
           />
-          <p className="text-[10px] text-[#999]">Shown in the challenge text and reference image · 5 tiles</p>
+          <p className="text-[10px] text-[#999]">Shown in the challenge text · AI finds 5 matching images</p>
         </div>
 
-        {/* Object 2 */}
+        {/* Concept 2 */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-bold uppercase tracking-widest text-[#111]">
-            Object 2 — Distractor
+            Concept 2 — Ignore these
           </label>
           <input
             type="text"
             value={object2}
             onChange={(e) => { setObject2(e.target.value); setGenerated(false); }}
             onKeyDown={(e) => e.key === 'Enter' && canGenerate && handleGenerate()}
-            placeholder="e.g. Bridges"
+            placeholder="e.g. Death, Void, Stillness"
             className="w-full px-3 py-2.5 text-sm border-2 border-[#111] bg-[#FAFAF8] placeholder:text-[#bbb] focus:outline-none focus:border-[#F2C94C] focus:bg-white transition-colors"
           />
-          <p className="text-[10px] text-[#999]">Images that should NOT be selected · 4 tiles</p>
+          <p className="text-[10px] text-[#999]">The distractor · AI finds 4 images that blend in</p>
         </div>
 
         {/* Generate button */}
@@ -151,6 +180,16 @@ export function CreatePanel() {
             environment variable.
           </p>
         </div>
+      </div>
+
+      {/* ── MANUAL EDIT SECTION ── */}
+      <div className="border-t-2 border-[#111] bg-[#111] px-4 py-3 flex-shrink-0">
+        <h3 className="text-xs font-bold text-[#F2C94C] uppercase tracking-wider">Image Pool</h3>
+        <p className="text-xs text-white/60 mt-0.5">Upload · select · drag or click to place in grid</p>
+      </div>
+      <div className="flex-1 flex flex-col min-h-0">
+        <Uploader />
+        <ImagePool />
       </div>
     </div>
   );

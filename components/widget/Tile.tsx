@@ -20,7 +20,7 @@ export function Tile({ index }: TileProps) {
   const handleClick = () => {
     if (mode === 'default') {
       toggleTileSelection(index);
-    } else if (mode === 'edit' && selectedPoolImageId) {
+    } else if (mode === 'create' && selectedPoolImageId) {
       const poolImage = imagePool.find((img) => img.id === selectedPoolImageId);
       if (poolImage) replaceGridTile(index, poolImage);
     }
@@ -41,12 +41,12 @@ export function Tile({ index }: TileProps) {
       onClick={handleClick}
       onKeyDown={handleKeyDown}
       aria-pressed={mode === 'default' ? isSelected : undefined}
-      aria-label={mode === 'edit' && selectedPoolImageId ? `Place image at position ${index + 1}` : tile.label}
-      title={mode === 'edit' && selectedPoolImageId ? 'Click to place image here' : tile.label}
+      aria-label={mode === 'create' && selectedPoolImageId ? `Place image at position ${index + 1}` : tile.label}
+      title={mode === 'create' && selectedPoolImageId ? 'Click to place image here' : tile.label}
       className={cn(
         'relative aspect-square overflow-hidden cursor-pointer select-none transition-all duration-150 focus-visible:outline-2 focus-visible:outline-[#4A90D9] focus-visible:outline-offset-[-2px]',
         mode === 'default' && isSelected && 'ring-[3px] ring-[#4A90D9] ring-inset',
-        mode === 'edit' && selectedPoolImageId && 'cursor-copy ring-2 ring-dashed ring-blue-400 ring-inset',
+        mode === 'create' && selectedPoolImageId && 'cursor-copy ring-2 ring-dashed ring-blue-400 ring-inset',
         isOver && 'ring-[3px] ring-[#4A90D9] ring-inset brightness-90'
       )}
     >
@@ -74,14 +74,14 @@ export function Tile({ index }: TileProps) {
       )}
 
       {/* Edit mode drop hint */}
-      {mode === 'edit' && isOver && (
+      {mode === 'create' && isOver && (
         <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center pointer-events-none">
           <span className="text-blue-700 font-bold text-2xl drop-shadow">+</span>
         </div>
       )}
 
       {/* Edit mode: show replace indicator on hover */}
-      {mode === 'edit' && !selectedPoolImageId && (
+      {mode === 'create' && !selectedPoolImageId && (
         <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors pointer-events-none" />
       )}
     </div>

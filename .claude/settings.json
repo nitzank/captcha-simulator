@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Read(//Users/kipizki/Desktop/onelifetolife/**)",
-      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-eslint --no-src-dir --import-alias \"@/*\" --yes)"
+      "Bash(npx create-next-app@latest . --typescript --tailwind --app --no-eslint --no-src-dir --import-alias \"@/*\" --yes)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Read(//private/tmp/**)",
+      "Bash(open http://localhost:3001)",
+      "Bash(npm uninstall:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/kipizki/Downloads/misc12/components"
     ]
   }
 }

@@ -23,7 +23,7 @@ export default function Home() {
   const sensors = useSensors(mouseSensor, touchSensor);
 
   const handleDragEnd = (event: DragEndEvent) => {
-    if (mode !== 'edit') return;
+    if (mode !== 'create') return;
     const { active, over } = event;
     if (!over) return;
     const dropId = String(over.id);
@@ -60,17 +60,16 @@ export default function Home() {
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
             <div>
               <h1 className="font-display text-[28px] text-[#F2C94C] leading-none">
-                CAPTCHA Simulator
+                CAPTCHA Frontier
               </h1>
               <p className="text-xs text-white/60 mt-1">
-                {mode === 'default' ? 'Preview mode' : 'Edit mode active'}
+                {mode === 'default' ? 'Objects are solved. Concepts are the frontier.' : 'Build a challenge AI can\'t crack.'}
               </p>
             </div>
             <Toggle
               options={[
-                { value: 'default', label: 'PREVIEW' },
-                { value: 'edit',    label: 'EDIT' },
                 { value: 'create',  label: 'CREATE' },
+                { value: 'default', label: 'PREVIEW' },
               ]}
               value={mode}
               onChange={(v) => setMode(v as AppMode)}
@@ -84,10 +83,8 @@ export default function Home() {
 
             <p className="text-sm text-[#555] mb-6 border-l-2 border-[#F2C94C] pl-3">
               {mode === 'default'
-                ? 'Select all Batman images below and click Verify to test the challenge'
-                : mode === 'edit'
-                ? 'Upload images, then drag or click to replace tiles in the grid'
-                : 'Type two objects and generate a new image challenge with AI'}
+                ? 'AI identifies a fire hydrant in milliseconds. Can it identify vibe? Select the matching images and click Verify.'
+                : 'Define two concepts — objects, feelings, ideas — and AI populates the grid. Try something abstract.'}
             </p>
 
             <div className="flex gap-6 items-start">
@@ -148,22 +145,6 @@ export default function Home() {
               {/* ── CREATE PANEL ── */}
               {mode === 'create' && <CreatePanel />}
 
-              {/* ── EDIT PANEL ── */}
-              {mode === 'edit' && (
-                <div
-                  className="flex-1 min-w-0 bg-white border-2 border-[#111] shadow-[4px_4px_0_#111] flex flex-col overflow-hidden"
-                  style={{ height: '510px' }}
-                >
-                  <div className="px-4 py-3 border-b-2 border-[#111] bg-[#111] flex-shrink-0">
-                    <h2 className="text-xs font-bold text-[#F2C94C] uppercase tracking-wider">Image Pool</h2>
-                    <p className="text-xs text-white/60 mt-0.5">
-                      Upload · select · drag or click to place in grid
-                    </p>
-                  </div>
-                  <Uploader />
-                  <ImagePool />
-                </div>
-              )}
 
             </div>
           </div>
@@ -172,7 +153,7 @@ export default function Home() {
         {/* ── FOOTER ── */}
         <footer className="bg-[#111] border-t-2 border-[#111] px-6 py-4">
           <div className="max-w-5xl mx-auto flex items-center justify-between">
-            <span className="font-display text-[#F2C94C] text-xl tracking-wide">CAPTCHA Simulator</span>
+            <span className="font-display text-[#F2C94C] text-xl tracking-wide">CAPTCHA Frontier</span>
             <span className="text-xs text-white/30">© 2026 Gotham Labs</span>
           </div>
         </footer>
