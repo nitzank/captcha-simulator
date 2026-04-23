@@ -28,7 +28,7 @@ function PoolItem({ id, imageUrl, name }: { id: string; imageUrl: string; name: 
       onClick={() => setSelectedPoolImage(isSelected ? null : id)}
       {...listeners}
       {...attributes}
-      title={`${name} — click to select, drag to place`}
+      title={`${name}: click to select, drag to place`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={imageUrl} alt={name} className="w-full h-full object-cover" draggable={false} />

@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useSimulatorStore, GridTile } from '@/lib/store';
-import { Uploader } from '@/components/edit-panel/Uploader';
-import { ImagePool } from '@/components/edit-panel/ImagePool';
 
 async function fetchImages(query: string, count: number): Promise<string[]> {
   const res = await fetch(`/api/images?query=${encodeURIComponent(query)}&count=${count}`);
   const data = await res.json() as { urls?: string[]; error?: string };
   if (!res.ok) throw new Error(data.error ?? `Failed to fetch images for "${query}"`);
-  if (!data.urls?.length) throw new Error(`No images found for "${query}" — try a different term`);
+  if (!data.urls?.length) throw new Error(`No images found for "${query}". Try a different term.`);
   return data.urls;
 }
 
@@ -68,13 +66,12 @@ export function CreatePanel() {
   return (
     <div
       className="flex-1 min-w-0 bg-white border-2 border-[#111] shadow-[4px_4px_0_#111] flex flex-col overflow-hidden"
-      style={{ height: '760px' }}
     >
       {/* Header */}
       <div className="px-4 py-3 border-b-2 border-[#111] bg-[#111] flex-shrink-0">
         <h2 className="text-xs font-bold text-[#F2C94C] uppercase tracking-wider">Design a Challenge</h2>
         <p className="text-xs text-white/60 mt-0.5">
-          Two concepts · AI finds images · humans see it, machines don&apos;t
+          Enter two concepts. Images are fetched for each.
         </p>
       </div>
 
@@ -102,7 +99,7 @@ export function CreatePanel() {
         {/* Concept 1 */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-bold uppercase tracking-widest text-[#111]">
-            Concept 1 — Select these
+            Concept 1: Select these
           </label>
           <input
             type="text"
@@ -112,13 +109,13 @@ export function CreatePanel() {
             placeholder="e.g. Life, Chaos, Vibe"
             className="w-full px-3 py-2.5 text-sm border-2 border-[#111] bg-[#FAFAF8] placeholder:text-[#bbb] focus:outline-none focus:border-[#F2C94C] focus:bg-white transition-colors"
           />
-          <p className="text-[10px] text-[#999]">Shown in the challenge text · AI finds 5 matching images</p>
+          <p className="text-[10px] text-[#999]">Shown in the challenge prompt. 5 images fetched.</p>
         </div>
 
         {/* Concept 2 */}
         <div className="flex flex-col gap-1.5">
           <label className="text-[10px] font-bold uppercase tracking-widest text-[#111]">
-            Concept 2 — Ignore these
+            Concept 2: Ignore these
           </label>
           <input
             type="text"
@@ -128,7 +125,7 @@ export function CreatePanel() {
             placeholder="e.g. Death, Void, Stillness"
             className="w-full px-3 py-2.5 text-sm border-2 border-[#111] bg-[#FAFAF8] placeholder:text-[#bbb] focus:outline-none focus:border-[#F2C94C] focus:bg-white transition-colors"
           />
-          <p className="text-[10px] text-[#999]">The distractor · AI finds 4 images that blend in</p>
+          <p className="text-[10px] text-[#999]">The distractor. 4 images fetched.</p>
         </div>
 
         {/* Generate button */}
@@ -180,16 +177,6 @@ export function CreatePanel() {
             environment variable.
           </p>
         </div>
-      </div>
-
-      {/* ── MANUAL EDIT SECTION ── */}
-      <div className="border-t-2 border-[#111] bg-[#111] px-4 py-3 flex-shrink-0">
-        <h3 className="text-xs font-bold text-[#F2C94C] uppercase tracking-wider">Image Pool</h3>
-        <p className="text-xs text-white/60 mt-0.5">Upload · select · drag or click to place in grid</p>
-      </div>
-      <div className="flex-1 flex flex-col min-h-0">
-        <Uploader />
-        <ImagePool />
       </div>
     </div>
   );

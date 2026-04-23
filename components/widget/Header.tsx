@@ -38,7 +38,7 @@ export function Header() {
               placeholder="Challenge text, use **bold** for emphasis"
             />
             <p className="text-[10px] text-blue-200">
-              Press Enter or click away to save · wrap words in <strong>**double stars**</strong> for bold
+              Press Enter or click away to save. Wrap words in <strong>**double stars**</strong> for bold.
             </p>
           </div>
         ) : (

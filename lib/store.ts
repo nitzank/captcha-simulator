@@ -44,6 +44,9 @@ interface SimulatorState {
   setVerifyState: (state: 'idle' | 'loading' | 'success' | 'error') => void;
   resetGrid: () => void;
   shuffleGrid: () => void;
+  isEditOpen: boolean;
+  setIsEditOpen: (v: boolean) => void;
+  swapGridTiles: (a: number, b: number) => void;
   setObject1: (v: string) => void;
   setObject2: (v: string) => void;
   setIsGenerating: (v: boolean) => void;
@@ -99,6 +102,7 @@ export const useSimulatorStore = create<SimulatorState>()(
       object1: '',
       object2: '',
       isGenerating: false,
+      isEditOpen: false,
 
       setMode: (mode) => set({ mode, selectedTiles: [], selectedPoolImageId: null }),
 
@@ -145,6 +149,15 @@ export const useSimulatorStore = create<SimulatorState>()(
       }),
 
       shuffleGrid: () => set({ gridTiles: makeShuffledTiles() }),
+
+      setIsEditOpen: (isEditOpen) => set({ isEditOpen }),
+
+      swapGridTiles: (a, b) =>
+        set((state) => {
+          const tiles = [...state.gridTiles];
+          [tiles[a], tiles[b]] = [tiles[b], tiles[a]];
+          return { gridTiles: tiles };
+        }),
 
       setObject1: (object1) => set({ object1 }),
       setObject2: (object2) => set({ object2 }),

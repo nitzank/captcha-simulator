@@ -13,24 +13,30 @@ import type { AppMode } from '@/lib/store';
 import { DndContext, DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 
 export default function Home() {
-  const { mode, setMode, imagePool, replaceGridTile } = useSimulatorStore();
+  const { mode, setMode, imagePool, replaceGridTile, swapGridTiles, isEditOpen, setIsEditOpen } = useSimulatorStore();
   const widgetRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [showDragHint, setShowDragHint] = useState(false);
 
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 8 } });
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
   const sensors = useSensors(mouseSensor, touchSensor);
 
   const handleDragEnd = (event: DragEndEvent) => {
-    if (mode !== 'create') return;
     const { active, over } = event;
     if (!over) return;
     const dropId = String(over.id);
+    const activeId = String(active.id);
     if (!dropId.startsWith('tile-drop-')) return;
-    const tileIndex = parseInt(dropId.replace('tile-drop-', ''), 10);
-    const poolImage = imagePool.find((img) => img.id === String(active.id));
-    if (poolImage) replaceGridTile(tileIndex, poolImage);
+    const toIndex = parseInt(dropId.replace('tile-drop-', ''), 10);
+    if (activeId.startsWith('tile-drag-')) {
+      const fromIndex = parseInt(activeId.replace('tile-drag-', ''), 10);
+      if (fromIndex !== toIndex) swapGridTiles(fromIndex, toIndex);
+    } else {
+      const poolImage = imagePool.find((img) => img.id === activeId);
+      if (poolImage) replaceGridTile(toIndex, poolImage);
+    }
   };
 
   const handleDownload = async () => {
@@ -63,7 +69,7 @@ export default function Home() {
                 CAPTCHA Frontier
               </h1>
               <p className="text-xs text-white/60 mt-1">
-                {mode === 'default' ? 'Objects are solved. Concepts are the frontier.' : 'Build a challenge AI can\'t crack.'}
+                {mode === 'default' ? 'Objects are solved. Concepts are the frontier.' : 'Build a custom challenge.'}
               </p>
             </div>
             <Toggle
@@ -84,13 +90,29 @@ export default function Home() {
             <p className="text-sm text-[#555] mb-6 border-l-2 border-[#F2C94C] pl-3">
               {mode === 'default'
                 ? 'AI identifies a fire hydrant in milliseconds. Can it identify vibe? Select the matching images and click Verify.'
-                : 'Define two concepts — objects, feelings, ideas — and AI populates the grid. Try something abstract.'}
+                : 'Enter two concepts. Images are fetched for each. Try something abstract.'}
             </p>
 
             <div className="flex gap-6 items-start">
 
               {/* ── WIDGET ── */}
-              <div className="flex-shrink-0 w-[450px]">
+              <div className="flex-shrink-0 w-[450px] relative">
+                {showDragHint && (
+                  <div
+                    className="absolute -top-14 left-1/2 -translate-x-1/2 z-40 pointer-events-none"
+                    aria-live="polite"
+                  >
+                    <div className="relative bg-[#111] text-white px-4 py-2.5 border-2 border-[#F2C94C] shadow-[3px_3px_0_#F2C94C] flex items-center gap-2 whitespace-nowrap">
+                      <svg className="w-3.5 h-3.5 text-[#F2C94C] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+                      </svg>
+                      <span className="text-xs font-bold uppercase tracking-wider">Drag &amp; drop images to reposition</span>
+                      {/* downward arrow */}
+                      <span className="absolute -bottom-[9px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[7px] border-l-transparent border-r-[7px] border-r-transparent border-t-[7px] border-t-[#F2C94C]" />
+                      <span className="absolute -bottom-[6px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[6px] border-t-[#111]" />
+                    </div>
+                  </div>
+                )}
                 <div
                   ref={widgetRef}
                   className="border-2 border-[#111] shadow-[6px_6px_0_#111] overflow-hidden"
@@ -112,14 +134,19 @@ export default function Home() {
                   <span className="text-[10px] text-[#ccc]">·</span>
                   <span className="text-[10px] text-[#999]">Privacy · Terms</span>
                 </div>
+              </div>
 
-                {/* ── DOWNLOAD (preview mode only) ── */}
-                {mode === 'default' && (
-                  <>
+              {/* ── CREATE PANEL ── */}
+              {mode === 'create' && <CreatePanel />}
+
+              {/* ── ACTIONS + EDIT PANEL (preview mode only) ── */}
+              {mode === 'default' && (
+                <div className="flex-1 min-w-0 flex flex-col gap-2">
+                  <div className="flex gap-2">
                     <button
                       onClick={handleDownload}
                       disabled={downloading}
-                      className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#111] text-white text-xs font-bold uppercase tracking-widest border-2 border-[#111] shadow-[3px_3px_0_#F2C94C] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all duration-75 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#111] text-white text-xs font-bold uppercase tracking-widest border-2 border-[#111] shadow-[3px_3px_0_#F2C94C] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all duration-75 disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0"
                     >
                       {downloading ? (
                         <>
@@ -135,15 +162,43 @@ export default function Home() {
                         </>
                       )}
                     </button>
-                    {downloadError && (
-                      <p role="alert" className="mt-2 text-xs text-red-600 text-center">{downloadError}</p>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {/* ── CREATE PANEL ── */}
-              {mode === 'create' && <CreatePanel />}
+                    <button
+                      onClick={() => {
+                        const opening = !isEditOpen;
+                        setIsEditOpen(opening);
+                        if (opening) {
+                          setShowDragHint(true);
+                          setTimeout(() => setShowDragHint(false), 3000);
+                        }
+                      }}
+                      className={`flex items-center justify-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-widest border-2 border-[#111] transition-all duration-75 ${
+                        isEditOpen
+                          ? 'bg-[#F2C94C] text-[#111] shadow-none'
+                          : 'bg-white text-[#111] shadow-[3px_3px_0_#111] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]'
+                      }`}
+                      title={isEditOpen ? 'Close edit panel' : 'Edit images'}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                      Edit
+                    </button>
+                  </div>
+                  {downloadError && (
+                    <p role="alert" className="text-xs text-red-600">{downloadError}</p>
+                  )}
+                  {isEditOpen && (
+                    <div className="bg-white border-2 border-[#111] shadow-[4px_4px_0_#111] flex flex-col overflow-hidden" style={{ height: '500px' }}>
+                      <div className="px-4 py-3 border-b-2 border-[#111] bg-[#111] flex-shrink-0">
+                        <h2 className="text-xs font-bold text-[#F2C94C] uppercase tracking-wider">Image Pool</h2>
+                        <p className="text-xs text-white/60 mt-0.5">Upload images, select one, then click or drag to place it.</p>
+                      </div>
+                      <Uploader />
+                      <ImagePool />
+                    </div>
+                  )}
+                </div>
+              )}
 
 
             </div>
@@ -154,7 +209,7 @@ export default function Home() {
         <footer className="bg-[#111] border-t-2 border-[#111] px-6 py-4">
           <div className="max-w-5xl mx-auto flex items-center justify-between">
             <span className="font-display text-[#F2C94C] text-xl tracking-wide">CAPTCHA Frontier</span>
-            <span className="text-xs text-white/30">© 2026 Gotham Labs</span>
+            <a href="https://nitzanklamer.com" target="_blank" rel="noopener noreferrer" className="text-xs text-white/30 hover:text-white/60 transition-colors">© 2026 Nitzan Klamer</a>
           </div>
         </footer>
 

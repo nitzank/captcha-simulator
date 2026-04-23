@@ -77,7 +77,7 @@ export function Uploader() {
           <p className="text-xs font-bold uppercase tracking-wider text-[#555]">
             {loading ? 'Processing…' : isDragging ? 'Drop to upload' : 'Drag & drop or click to upload'}
           </p>
-          <p className="text-xs text-[#999]">PNG · JPG · WEBP · Max 2MB</p>
+          <p className="text-xs text-[#999]">PNG, JPG, WEBP. Max 2MB.</p>
         </div>
         <input
           ref={inputRef}
